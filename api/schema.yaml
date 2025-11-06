@@ -1,0 +1,382 @@
+openapi: 3.0.0
+info:
+  title: User Service API
+  version: 1.0.0
+  description: API для работы с пользователями, заданиями, рефералами и балансом.
+
+security:
+  - BearerAuth: []
+
+paths:
+  /users/auth:
+    post:
+      summary: Регистрация или авторизация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '201':
+          description: Новый пользователь зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{id}/status:
+    get:
+      summary: Получение информации о пользователе
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatus'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/leaderboard:
+    get:
+      summary: Получение топ пользователей по балансу
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 0
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Топ пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardUser'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{id}/task/complete:
+    post:
+      summary: Завершение задания пользователем
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCompleteRequest'
+      responses:
+        '200':
+          description: Задание выполнено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCompleteResponse'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{id}/referrer:
+    post:
+      summary: Установка реферера пользователем
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReferrerRequest'
+      responses:
+        '200':
+          description: Реферер установлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferrerResponse'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: string
+
+    AuthRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - user_id
+      properties:
+        token:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+
+    CompletedTask:
+      type: object
+      required:
+        - id
+        - code
+        - points
+        - completed_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        description:
+          type: string
+        points:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        completed_at:
+          type: string
+          format: date-time
+
+    UserStatus:
+      type: object
+      required:
+        - id
+        - username
+        - points
+        - completed_tasks
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        points:
+          type: integer
+        referrer_id:
+          type: string
+          format: uuid
+          nullable: true
+        completed_tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompletedTask'
+
+    LeaderboardUser:
+      type: object
+      required:
+        - id
+        - username
+        - points
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        points:
+          type: integer
+
+    TaskCompleteRequest:
+      type: object
+      required:
+        - task_id
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    TaskCompleteResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: "ok"
+
+    ReferrerRequest:
+      type: object
+      required:
+        - referrer_id
+      properties:
+        referrer_id:
+          type: string
+          format: uuid
+
+    ReferrerResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: "ok"
