@@ -1,9 +1,9 @@
-package users
+package service
 
 import (
 	"context"
 
-	"service-boilerplate-go/internal/services/users/entities"
+	entities2 "service-boilerplate-go/internal/service/entities"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
@@ -11,7 +11,7 @@ import (
 
 func (s *Service) InputReferrer(ctx context.Context, userID, referrerID uuid.UUID) error {
 	var (
-		user           *entities.User
+		user           *entities2.User
 		userExists     bool
 		referrerExists bool
 	)
@@ -25,7 +25,7 @@ func (s *Service) InputReferrer(ctx context.Context, userID, referrerID uuid.UUI
 			return err
 		}
 		if u == nil {
-			return entities.ErrUserNotFound
+			return entities2.ErrUserNotFound
 		}
 		user = u
 		userExists = true
@@ -38,7 +38,7 @@ func (s *Service) InputReferrer(ctx context.Context, userID, referrerID uuid.UUI
 			return err
 		}
 		if !exists {
-			return entities.ErrUserNotFound
+			return entities2.ErrUserNotFound
 		}
 		referrerExists = true
 		return nil
@@ -50,11 +50,11 @@ func (s *Service) InputReferrer(ctx context.Context, userID, referrerID uuid.UUI
 	}
 
 	if !userExists || !referrerExists {
-		return entities.ErrUserNotFound
+		return entities2.ErrUserNotFound
 	}
 
 	if user.ReferrerID != nil {
-		return entities.ErrReferrerAlreadySet
+		return entities2.ErrReferrerAlreadySet
 	}
 
 	// обновляем поле referrer_id

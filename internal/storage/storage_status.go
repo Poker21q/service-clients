@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
+	"errors"
 
-	"service-boilerplate-go/internal/services/users/entities"
+	entities "service-boilerplate-go/internal/service/entities"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -24,7 +25,7 @@ func (s *Storage) GetUserStatus(ctx context.Context, userID uuid.UUID) (*entitie
 		&status.ReferrerID,
 	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, entities.ErrUserNotFound
 		}
 		return nil, err
@@ -64,7 +65,7 @@ func (s *Storage) fetchUserTasks(ctx context.Context, userID uuid.UUID) ([]*enti
 		FROM user_tasks ut
 		JOIN tasks t ON ut.task_id = t.id
 		WHERE ut.user_id = $1
-		ORDER BY ut.completed_at ASC
+		ORDER BY ut.completed_at
 	`
 	rows, err := s.db.Query(ctx, query, userID)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"service-boilerplate-go/internal/services/users/entities"
+	"service-boilerplate-go/internal/service/entities"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -103,7 +103,12 @@ func (s *Storage) MarkTaskMetadata(ctx context.Context, userTaskID uuid.UUID, me
 	}
 
 	br := s.db.SendBatch(ctx, batch)
-	defer br.Close()
+	defer func() {
+		if err := br.Close(); err != nil {
+			ctx = context.WithoutCancel(ctx)
+			s.logger.Error(ctx, err.Error())
+		}
+	}()
 
 	for range metadata {
 		if _, err := br.Exec(); err != nil {

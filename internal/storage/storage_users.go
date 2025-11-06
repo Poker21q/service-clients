@@ -5,13 +5,13 @@ import (
 	"errors"
 	"time"
 
-	"service-boilerplate-go/internal/services/users/entities"
+	"service-boilerplate-go/internal/service/entities"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
-// UserModel — структура для работы с таблицей users
+// UserModel — структура для работы с таблицей service
 type UserModel struct {
 	ID           uuid.UUID
 	Username     string

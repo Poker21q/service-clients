@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"service-boilerplate-go/internal/services/users/entities"
+	"service-boilerplate-go/internal/service/entities"
 
 	"github.com/google/uuid"
 )

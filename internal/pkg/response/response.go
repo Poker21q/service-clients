@@ -5,8 +5,9 @@ import (
 	"errors"
 	"net/http"
 
+	"service-boilerplate-go/internal/service/entities"
+
 	"service-boilerplate-go/internal/generated/api"
-	"service-boilerplate-go/internal/services/users/entities"
 )
 
 func OkJSON(w http.ResponseWriter, data any) {

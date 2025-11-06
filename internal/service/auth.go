@@ -1,10 +1,10 @@
-package users
+package service
 
 import (
 	"context"
 	"errors"
 
-	"service-boilerplate-go/internal/services/users/entities"
+	"service-boilerplate-go/internal/service/entities"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

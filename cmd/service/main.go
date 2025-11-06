@@ -8,22 +8,19 @@ import (
 	"syscall"
 	"time"
 
-	"service-boilerplate-go/internal/api/users_id_referrer_post"
-	"service-boilerplate-go/internal/api/users_id_status_get"
-	users_id_task_complete_post "service-boilerplate-go/internal/api/users_id_task_complete_post"
-	"service-boilerplate-go/internal/pkg/middlewares/jwtauth"
+	"service-boilerplate-go/internal/pkg/middlewares/recovery"
+	"service-boilerplate-go/internal/service"
 
 	"service-boilerplate-go/internal/api/users_auth_post"
+	"service-boilerplate-go/internal/api/users_id_referrer_post"
+	"service-boilerplate-go/internal/api/users_id_status_get"
+	"service-boilerplate-go/internal/api/users_id_task_complete_post"
 	"service-boilerplate-go/internal/api/users_leaderboard_get"
-
-	"service-boilerplate-go/internal/services/users"
-
-	"service-boilerplate-go/pkg/config"
-
-	"service-boilerplate-go/pkg/pgdb"
-
+	"service-boilerplate-go/internal/pkg/middlewares/jwtauth"
 	"service-boilerplate-go/internal/storage"
+	"service-boilerplate-go/pkg/config"
 	"service-boilerplate-go/pkg/logger"
+	"service-boilerplate-go/pkg/pgdb"
 
 	"github.com/gorilla/mux"
 )
@@ -45,8 +42,8 @@ func main() {
 	}
 	defer pgdbClient.Close()
 
-	storageInstance := storage.New(pgdbClient)
-	usersService := users.New(storageInstance, appConfig.Auth().Secret())
+	storageInstance := storage.New(logger, pgdbClient)
+	usersService := service.New(storageInstance, appConfig.Auth().Secret())
 	httpRouter := NewRouter(logger, usersService, appConfig.Auth().Secret())
 
 	server := NewServer(appConfig.Server(), httpRouter)
@@ -93,22 +90,25 @@ func runServerWithGracefulShutdown(
 	return nil
 }
 
-func NewRouter(logger *logger.Logger, usersService *users.Service, secret string) http.Handler {
-	r := mux.NewRouter()
-	r.Handle("/users/auth", users_auth_post.New(logger, usersService)).Methods(http.MethodPost)
-	// leaderboard
+func NewRouter(logger *logger.Logger, usersService *service.Service, secret string) http.Handler {
+	router := mux.NewRouter()
+	router.Use(logger.Middleware())
+	router.Use(recovery.Middleware(logger))
 
-	authenticated := r.NewRoute().Subrouter()
+	router.Handle("/users/auth", users_auth_post.New(logger, usersService)).Methods(http.MethodPost)
+
+	authenticated := router.NewRoute().Subrouter()
 	authenticated.Use(jwtauth.Middleware(secret))
+
 	authenticated.Handle("/users/{id}/status", users_id_status_get.New(logger, usersService)).Methods(http.MethodGet)
 	authenticated.Handle("/users/leaderboard", users_leaderboard_get.New(logger, usersService)).Methods(http.MethodGet)
 	authenticated.Handle("/users/{id}/task/complete", users_id_task_complete_post.New(logger, usersService)).Methods(http.MethodPost)
 	authenticated.Handle("/users/{id}/referrer", users_id_referrer_post.New(logger, usersService)).Methods(http.MethodPost)
 
-	return r
+	return router
 }
 
-// TODO: txManager, slogging, middleware: recovery, panic, decomposition(service, repository)
+// TODO: txManager, slogging
 
 func NewServer(config config.Server, handler http.Handler) *http.Server {
 	return &http.Server{
