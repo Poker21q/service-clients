@@ -60,3 +60,11 @@ func (s *Service) generateToken(userID uuid.UUID) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return t.SignedString(s.jwtSecret)
 }
+
+func (s *Service) GetUsersLeaderboard(ctx context.Context, limit, offset int) (entities.UsersLeaderboard, error) {
+	return s.storage.GetUsersLeaderboard(ctx, limit, offset)
+}
+
+func (s *Service) GetUserStatus(ctx context.Context, userID uuid.UUID) (*entities.UserStatus, error) {
+	return s.storage.GetUserStatus(ctx, userID)
+}

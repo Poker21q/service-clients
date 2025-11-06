@@ -85,6 +85,26 @@ func (s *Storage) MarkTaskCompleted(ctx context.Context, userID, taskID uuid.UUI
 	return userTaskID, nil
 }
 
+func (s *Storage) UpdateUserReferrer(ctx context.Context, userID, referrerID uuid.UUID) error {
+	const query = `
+		UPDATE users
+		SET referrer_id = $1
+		WHERE id = $2
+	`
+
+	tag, err := s.db.Exec(ctx, query, referrerID, userID)
+	if err != nil {
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		// Если обновление не затронуло ни одной строки — пользователя нет
+		return entities.ErrUserNotFound
+	}
+
+	return nil
+}
+
 // MarkTaskMetadata батчево сохраняет метадату для выполненного задания
 // и возвращает доменную ошибку при любой ошибке вставки
 func (s *Storage) MarkTaskMetadata(ctx context.Context, userTaskID uuid.UUID, metadata map[string]string) error {

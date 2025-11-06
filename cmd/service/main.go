@@ -108,7 +108,7 @@ func NewRouter(logger *logger.Logger, usersService *service.Service, secret stri
 	return router
 }
 
-// TODO: txManager, slogging
+// TODO: txManager
 
 func NewServer(config config.Server, handler http.Handler) *http.Server {
 	return &http.Server{
