@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"service-boilerplate-go/internal/pkg/middlewares/recovery"
+	"service-boilerplate-go/internal/pkg/middleware/recovery"
 	"service-boilerplate-go/internal/service"
 
 	"service-boilerplate-go/internal/api/users_auth_post"
@@ -16,7 +16,7 @@ import (
 	"service-boilerplate-go/internal/api/users_id_status_get"
 	"service-boilerplate-go/internal/api/users_id_task_complete_post"
 	"service-boilerplate-go/internal/api/users_leaderboard_get"
-	"service-boilerplate-go/internal/pkg/middlewares/jwtauth"
+	"service-boilerplate-go/internal/pkg/middleware/jwtauth"
 	"service-boilerplate-go/internal/storage"
 	"service-boilerplate-go/pkg/config"
 	"service-boilerplate-go/pkg/logger"

@@ -7,7 +7,7 @@ import (
 	"service-boilerplate-go/internal/service/entities"
 
 	"service-boilerplate-go/internal/generated/api"
-	"service-boilerplate-go/internal/pkg/middlewares/jwtauth"
+	"service-boilerplate-go/internal/pkg/middleware/jwtauth"
 	"service-boilerplate-go/internal/pkg/response"
 
 	"github.com/google/uuid"
